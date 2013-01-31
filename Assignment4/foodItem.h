@@ -10,17 +10,17 @@ namespace assignment4
   {
   public:
     //constructor
-    food_item(int quantity, const std::string name, const int upc, int shelf_life);
+    food_item(int quantity, const std::string name, const std::string upc, int shelf_life);
     food_item(const food_item & other);// copy
     ~food_item(); //destructor
 
-    int quantity;
-    const std::string name;
-    const int upc;
-    int shelf_life;
+    
 
   private:
-    
+    int quantity;
+    const std::string name;
+    const std::string upc;
+    int shelf_life;
   };
 }
 
