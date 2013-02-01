@@ -15,9 +15,9 @@ namespace assignment4
 
 ware_house::ware_house(const std::string name)
 {
-  this->food_set = new food_item();
+  this->food_set = new set<food_item>food_set;
   this->name = name;
-  this->dates = new set<date>(); // don't know if need to be new
+  this->dates = new set<date> dates; // don't know if need to be new
 }
 ware_house::ware_house(const ware_house & rhs)
 {
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
       string line;
       
        getline(in, line);
-       istreamstring iss(line);
+       istringstream iss(line);
 
        if((iss>>word).compare("FoodItem")==0)
 	{
@@ -126,7 +126,6 @@ if(word.compare("End")==0)
 	  cout << "Failed" << endl;
 	  break;
 	}
-	
-      }
+    }
 
 }
