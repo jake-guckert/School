@@ -1,0 +1,29 @@
+food_item::food_item(std::string name, string upc, 
+		       int shelf_life)
+  {
+    this->name = name;
+    this->upc = upc;
+    this->shelf_life = shelf_life;
+    this->location = "";
+    this->quantity = 0;
+
+  }
+  food_item::food_item(const food_item & rhs)
+  {
+    this->name = "";
+    this->upc = "";
+    this->shelf_life = 0;
+    this->location = "";
+    this->quantity = 0;
+
+    //*this = rhs;
+  
+  }
+  food_item::~food_item()
+  {
+    //maybe need a clean() like in utah_set
+  }
+
+  food_item::food_item()
+  {
+  }

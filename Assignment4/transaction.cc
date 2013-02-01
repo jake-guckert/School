@@ -8,69 +8,20 @@
 #include <set>
 #include <map>
 #include <ctime>
-#include "wareHouse.h"
+#include "ware_house.h"
 #include "foodItem.h"
 
 using namespace std;
 
-namespace assignment4
-{
-
-  /* ware_house::ware_house(std::string name)
-     {
-     //this->food_set = set<assignment4::food_item>;
-     this->name = name;
-     //this->dates = set<assignment4::date>; // don't know if need to be new
-     }
-     ware_house::ware_house(ware_house & rhs)
-     {
-     //this->food_set = NULL;
-     this->name = NULL;
-     //this->dates = NULL; // don't know if need to be new
-
-     *this = rhs;
-
-     }
-     ware_house::~ware_house()
-     {
-     //maybe need a clean() like in utah_set
-     }*/
-
   /*******************************************************************************/
-  food_item::food_item(std::string name, string upc, 
-		       int shelf_life)
-  {
-    this->name = name;
-    this->upc = upc;
-    this->shelf_life = shelf_life;
-    this->location = "";
-    this->quantity = 0;
-
-  }
-  food_item::food_item(food_item & rhs)
-  {
-    this->name = "";
-    this->upc = "";
-    this->shelf_life = 0;
-    this->location = "";
-    this->quantity = 0;
-
-    *this = rhs;
-  
-  }
-  food_item::~food_item()
-  {
-    //maybe need a clean() like in utah_set
-  }
-
-  food_item::food_item()
-  {
-  }
-}
-
 tm tim; // used for dates
-//map<assignment4::ware_house> wh_map; // set of warehouses
-// create a dictionary of food items
+
+//key is the warehouse name
+map<string, assignment4::ware_house> wh_map; // set of warehouses
+
+// create a dictionary of available  food items. not tied to any warehouse
+// key is the upc. zero quantity.
+// Just a list of available food items to choose from.
 map<string, assignment4::food_item> food_map;
 
  /********************************************************************************/
@@ -115,8 +66,8 @@ int main(int argc, char** argv)
 
 	  assignment4::food_item fi(name, upc, shelf_life);
 	  	  
-	  // add dictionary of food_item
-	  //food_map.insert(pair<string, assignment4::food_item>(upc,fi));
+	  // food item to dictionary by upc key
+	  food_map[upc] = fi;
 	}
 
       //Make a new warehouse with the name provided
@@ -128,10 +79,10 @@ int main(int argc, char** argv)
 	  getline(in, line);
 	  
 	  // create new warehouse
-	  //assignment4::ware_house wh(line);
+	  assignment4::ware_house wh(line);
 	  
 	  //Add warehouse to set of warehouses
-	  //wh_map.insert(line);
+	  //wh_map[line] = wh;
 	  
 	}
 
@@ -173,18 +124,26 @@ int main(int argc, char** argv)
 	  string warehouse = line;
 
 	  //iterator for map
-	  //map<string, food_item>::iterator it;
+	  map<string, assignment4::food_item>::iterator it;
 	 
 	  //find upc in food_map
-	  //it = food_map.find(upc);
+	  it = food_map.find(upc);
 	  
-	  //it - should be a food_item
+	  //Check if item already exists in the warehouse
+
+
+	  //it - should be a food_item??????????
 	  // make a new food_item with quantity, location and upc
 	  // and shelf-life, and name from upc
-	  //Add this food item to the list of food items
-	  //food_item f = (it.name, it.upc, it.shelf-life);
-	  //f.location = warehouse;
-	  //f.quantity = quantity;
+	  assignment4::food_item f(it->second.name, it->second.upc, it->second.shelf_life);
+	  f.location = warehouse;
+	  f.quantity = quantity;
+
+	  //Add this food item to the warehouse
+	  //????
+
+
+	  //add one to activity of warehouse
 
 	}
       
@@ -205,7 +164,8 @@ int main(int argc, char** argv)
 	  string warehouse = line;
 
 	  // iterator for set
-	  //std::map<assignmet4::ware_house>::iterator it;
+	  std::map<string, assignment4::ware_house>::iterator it;
+
 	  //look by warehouse, by upc and then minus quantity
 	  //find warehouse
 	  //it = wh_map.find(warehouse by its name);
@@ -213,6 +173,7 @@ int main(int argc, char** argv)
 	  //find food_item by upc
 	  //subtract quantity from food_item.quantity
 	  
+	  //add one to activity of warehouse
 	}
 
       else if(line.compare("Next")==0)

@@ -3,8 +3,6 @@
 
 #include <string>
 
-
-
 namespace assignment4
 {
 
@@ -14,7 +12,7 @@ namespace assignment4
     //constructor
     food_item();
     food_item(std::string name, std::string upc, int shelf_life);
-    food_item(food_item & other);// copy
+    //food_item(const food_item & other);// copy
     ~food_item(); //destructor
 
     std::string location;
