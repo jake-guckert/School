@@ -15,9 +15,9 @@ namespace assignment4
 
 ware_house::ware_house(const std::string name)
 {
-  this->food_set = new set<food_item>food_set;
+  this->food_set = new set<food_item>;
   this->name = name;
-  this->dates = new set<date> dates; // don't know if need to be new
+  this->dates = new set<date>; // don't know if need to be new
 }
 ware_house::ware_house(const ware_house & rhs)
 {
