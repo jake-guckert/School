@@ -4,8 +4,10 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <sstream>
+#include <set>
+#include <ctime>
 #include "wareHouse.h"
-#include "date.h"
 #include "foodItem.h"
 
 using namespace std;
@@ -13,77 +15,55 @@ using namespace std;
 namespace assignment4
 {
 
-ware_house::ware_house(const std::string name)
-{
-  this->food_set = new set<food_item>;
-  this->name = name;
-  this->dates = new set<date>; // don't know if need to be new
-}
-ware_house::ware_house(const ware_house & rhs)
-{
-  this->food_set = NULL;
-  this->name = NULL;
-  this->dates = NULL; // don't know if need to be new
+  /* ware_house::ware_house(std::string name)
+     {
+     //this->food_set = set<assignment4::food_item>;
+     this->name = name;
+     //this->dates = set<assignment4::date>; // don't know if need to be new
+     }
+     ware_house::ware_house(ware_house & rhs)
+     {
+     //this->food_set = NULL;
+     this->name = NULL;
+     //this->dates = NULL; // don't know if need to be new
 
-  *this = rhs;
+     *this = rhs;
 
-}
-ware_house::~ware_house()
-{
-  //maybe need a clean() like in utah_set
-}
+     }
+     ware_house::~ware_house()
+     {
+     //maybe need a clean() like in utah_set
+     }*/
 
+  /*******************************************************************************/
+  food_item::food_item(std::string name, string upc, 
+		       int shelf_life)
+  {
+    this->name = name;
+    this->upc = upc;
+    this->shelf_life = shelf_life;
 
-food_item::food_item(int quantity, const std::string name, const string upc, 
-		     int shelf_life)
-{
-  this->quantity = quantity;
-  this->name = name;
-  this->upc = upc;
-  this->shelf_life = shelf_life;
+  }
+  food_item::food_item(food_item & rhs)
+  {
+    this->name = "";
+    this->upc = "";
+    this->shelf_life = 0;
 
-}
-food_item::food_item(const food_item & rhs)
-{
-  this->quantity = 0;
-  this->name = NULL;
-  this->upc = NULL;
-  this->shelf_life = 0;
-
-  *this = rhs;
+    *this = rhs;
   
-}
-food_item::~food_item()
-{
-  //maybe need a clean() like in utah_set
+  }
+  food_item::~food_item()
+  {
+    //maybe need a clean() like in utah_set
+  }
 }
 
+tm tim; // used for dates
+set<ware_house> set_wh; // set of warehouses
+// create a dictionary of food items
 
-date::date(int month, int day, int year)
-{
-
-}
-date::date(const date & rhs)
-{
-
-}
-date::~date()
-{
-
-}
-  /*int get_month()
-{
-  return this->month;
-}
-int get_day()
-{
-  return this->day;
-}
-int get_year()
-{
-  return this->year;
-}
-}*/
+  /********************************************************************************/
 
 int main(int argc, char** argv)
 {
@@ -92,34 +72,105 @@ int main(int argc, char** argv)
   printf("Report by Jake Guckert, Josh Bell!!!!!!!\n\n");
 
   //Read in and sort data
-   while(true)
-  {
+  while(true)
+    {
       std::string word;
       string line;
       
-       getline(in, line);
-       istringstream iss(line);
+      getline(in, line, ' ');
 
-       if((iss>>word).compare("FoodItem")==0)
+      if(line.compare("FoodItem") == 0)
 	{
-	  iss>>word>>word>>word;
-	  cout << word << endl; 
+	  //UPC
+	  getline(in, line, ':');
+	  getline(in, line, ' ');
+	  getline(in, line, ' ');
+	  
+	  std::string upc = line;
+
+	  getline(in, line, ':');
+	  getline(in, line, ' ');
+	  getline(in, line, ' ');
+
+	  int shelf_life = atoi(line.c_str());
+
+	  getline(in, line, ':');
+	  getline(in, line, ' ');
+	  getline(in, line);
+
+	  std::string name = line;
+
+	  assignment4::food_item fi(name, upc, shelf_life);
+	  // add dictionary of food_itme
 	}
-      if(word.compare("Warehouse")==0)
-  {}
-	if(word.compare("Start")==0)
-  {}
-	  if(word.compare("Receive")==0)
-  {}
-	    if(word.compare("Request")==0)
-  {}
-	      if(word.compare("Next")==0)
-  {}
-if(word.compare("End")==0)
-  {
-       cout << "file complete" << endl;
-       break;
-  }
+      
+      else if(line.compare("Warehouse")==0)
+	{
+	  getline(in, line, '-');
+	  getline(in, line, ' ');
+	  getline(in, line);
+	  
+	  //Add line to warehouse?????????????????????
+	  
+	}
+      else if(line.compare("Start")==0)
+	{
+	  getline(in, line, ':');
+	  getline(in, line, ' ');
+	  getline(in, line, '/');
+
+	  tim.tm_mon = atoi(line.c_str());
+	  getline(in, line, '/');
+	  tim.tm_mday = atoi(line.c_str());
+	  getline(in, line);
+	  tim.tm_year = atoi(line.c_str());
+
+	}
+      else if(line.compare("Receive:")==0)
+	{
+	  // make a new food item looked up by the upc and add quantity and warehous etc
+
+	  //UPC
+	  getline(in, line, ' ');
+	  // add item quantity to this upc
+	  
+	  //quantity
+	  getline(in, line, ' ');
+
+	  //warehouse
+	  getline(in, line);
+
+	}
+
+      else if(line.compare("Request:")==0) // add item quantity to this upc at this 
+	                             //warehouse
+	{
+	  //UPC
+	  getline(in, line, ' ');
+	  
+	  //quantity
+	  getline(in, line, ' ');
+
+	  //warehouse
+	  getline(in, line);
+
+	  //look by warehouse, by upc and then minus quantity
+	}
+
+      else if(line.compare("Next")==0)
+	{
+	  // add one to whatever day it is
+	  getline(in, line);
+	  tim.tm_mday += 1; //adds one day
+	  mktime(&tim); //refactor months and adjusts
+
+	}
+
+      if(line.compare("End")==0)// deal with extra spaces after END!!!!
+	{
+	  cout << "file complete" << endl;
+	  break;
+	}
 
       if(in.fail())
 	{

@@ -1,7 +1,9 @@
-#include <string>
-
 #ifndef FOOD_H
 #define FOOD_H
+
+#include <string>
+
+
 
 namespace assignment4
 {
@@ -10,17 +12,19 @@ namespace assignment4
   {
   public:
     //constructor
-    food_item(int quantity, const std::string name, const std::string upc, int shelf_life);
-    food_item(const food_item & other);// copy
+    food_item(std::string name, std::string upc, int shelf_life);
+    food_item(food_item & other);// copy
     ~food_item(); //destructor
 
+    std::string location;
+    std::string name;
+    std::string upc;
+    int shelf_life;
+    int quantity;
     
 
   private:
-    int quantity;
-    const std::string name;
-    const std::string upc;
-    int shelf_life;
+    
   };
 }
 
