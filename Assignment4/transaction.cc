@@ -11,6 +11,7 @@
 #include <time.h>
 #include "ware_house.h"
 #include "foodItem.h"
+#include "dates.h"
 
 using namespace std;
 
@@ -106,12 +107,24 @@ int main(int argc, char** argv)
 	  tim.tm_year = atoi(line.c_str());
 
 	  int activity = 0;
-	  cout << tim.tm_mon << tim.tm_mday << (long int)tim.tm_year << endl;
 
+	  string month;
+	  ostringstream monthconvert;
+	  monthconvert << tim.tm_mon;
+	  month = monthconvert.str();
 
-	  assignment4::date day1(tim.tm_mon,  tim.tm_mday, tim.tm_year, activity);
+	  string day;
+	  ostringstream dayconvert;
+	  dayconvert << tim.tm_mday;
+	  day = dayconvert.str();
 
+	  string year;
+	  ostringstream yearconvert;
+	  yearconvert << tim.tm_year;
+	  year = yearconvert.str();
 
+	  string d = year+month+day;
+	  assignment4::date day1(d);
 	}
       
       //items being shipped in by warehouse
@@ -183,12 +196,11 @@ int main(int argc, char** argv)
 	  //find food_item by upc
 	  //subtract quantity from food_item.quantity += -1
 	  
-<<<<<<< HEAD
+	  // HEAD
 
 	  //add one to activity of warehouse
-=======
 	  //warehouse.date.activity += 1 //add one to activity of warehouse
->>>>>>> Timing objects?!??!?!
+	  // Timing objects?!??!?!
 	}
 
       else if(line.compare("Next")==0)

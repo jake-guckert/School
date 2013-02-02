@@ -1,7 +1,7 @@
 #ifndef DATES_H
 #define DATES_H
 
-#include<ctime>
+#include <string>
 
 namespace assignment4
 {
@@ -10,10 +10,11 @@ namespace assignment4
   {
 
   public:
-    date();
-    date(&int month, &int day, &int year, int activity);
+    date(std::string d);
     //~date(); // Destructor
-
+   
+    std::string d;
+    int activity;
 
   private:
   
