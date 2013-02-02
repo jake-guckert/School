@@ -8,12 +8,13 @@
 #include <set>
 #include <map>
 #include <ctime>
+#include <time.h>
 #include "ware_house.h"
 #include "foodItem.h"
 
 using namespace std;
 
-  /*******************************************************************************/
+/*******************************************************************************/
 tm tim; // used for dates
 
 //key is the warehouse name
@@ -24,13 +25,14 @@ map<string, assignment4::ware_house> wh_map; // set of warehouses
 // Just a list of available food items to choose from.
 map<string, assignment4::food_item> food_map;
 
- /********************************************************************************/
+// A set of dates where the key is the date in as a string.
+map<string, assignment4::date> date_map;
+
+/********************************************************************************/
 
 int main(int argc, char** argv)
 {
   fstream in(argv[1]);
-
-  printf("Report by Jake Guckert, Josh Bell!!!!!!!\n\n");
 
   //Read in and sort data
   while(true)
@@ -97,10 +99,18 @@ int main(int argc, char** argv)
 	  tim.tm_mon = atoi(line.c_str());
 	  getline(in, line, '/');
 	  //day
+	  
 	  tim.tm_mday = atoi(line.c_str());
 	  //year
 	  getline(in, line);
 	  tim.tm_year = atoi(line.c_str());
+
+	  int activity = 0;
+	  cout << tim.tm_mon << tim.tm_mday << (long int)tim.tm_year << endl;
+
+
+	  assignment4::date day1(tim.tm_mon,  tim.tm_mday, tim.tm_year, activity);
+
 
 	}
       
@@ -171,10 +181,14 @@ int main(int argc, char** argv)
 	  //it = wh_map.find(warehouse by its name);
 	  //it - is the warehouse
 	  //find food_item by upc
-	  //subtract quantity from food_item.quantity
+	  //subtract quantity from food_item.quantity += -1
 	  
+<<<<<<< HEAD
 
 	  //add one to activity of warehouse
+=======
+	  //warehouse.date.activity += 1 //add one to activity of warehouse
+>>>>>>> Timing objects?!??!?!
 	}
 
       else if(line.compare("Next")==0)
@@ -190,7 +204,14 @@ int main(int argc, char** argv)
 
       if(line.compare("End")==0)// deal with extra spaces after END!!!!
 	{
-	  cout << "file complete" << endl;
+	  cout << "\n" << endl;
+	  cout << "Report by Jake Guckert & Josh Bell\n" << endl;
+	  cout << "Unstocked Products:\n" << endl;
+	  // cout << Unstocked(map of warehouses) << "\n" <<  endl; returns a list of UPCs and name
+	  cout << "Fully-Stocked Products:\n" << endl;
+	  // cout << FullyStocked(map of warehouses) << "\n" << endl; returns a list of UPCs and name
+	  cout << "Busiest Days:\n" << endl;
+	  // cout BusiestDays(map of warehouses) << "\n" << endl;
 	  break;
 	}
 

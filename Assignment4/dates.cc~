@@ -1,0 +1,24 @@
+#include "date.h"
+#include <ctime>
+
+namespace assignment4
+{
+
+  date::date(tm_mon month, tm_mday day, tm_year year, int activity)
+  {
+    this->month = month;
+    this->day = day; 
+    this->year = year;
+    this->activity = activity;
+  }
+
+  date::date~date()
+  {
+
+  }
+
+  date::date()
+  {
+
+  }
+}
