@@ -9,6 +9,7 @@
 #include <map>
 #include <ctime>
 #include <time.h>
+#include <vector>
 #include "ware_house.h"
 #include "foodItem.h"
 #include "dates.h"
@@ -27,7 +28,7 @@ map<string, assignment4::ware_house> wh_map; // set of warehouses
 map<string, assignment4::food_item> food_map;
 
 // A set of dates where the key is the date in as a string.
-map<string, assignment4::date> date_map;
+assignment4::date current_day("");
 
 /********************************************************************************/
 
@@ -81,11 +82,12 @@ int main(int argc, char** argv)
 	  getline(in, line, ' ');
 	  getline(in, line);
 	  
+	  string name = line;
 	  // create new warehouse
-	  assignment4::ware_house wh(line);
+	  assignment4::ware_house wh(name);
 	  
 	  //Add warehouse to set of warehouses
-	  //wh_map[line] = wh;
+	  wh_map[name] = wh;
 	  
 	}
 
@@ -125,6 +127,11 @@ int main(int argc, char** argv)
 
 	  string d = year+month+day;
 	  assignment4::date day1(d);
+	  //current_day = day1;
+
+	  // we can either add day1 to all the warehouses set of dates or 
+	  // we can have a set of dates and beable to choose the first date
+	  // to add to a warehouse
 	}
       
       //items being shipped in by warehouse
@@ -191,7 +198,8 @@ int main(int argc, char** argv)
 
 	  //look by warehouse, by upc and then minus quantity
 	  //find warehouse
-	  //it = wh_map.find(warehouse by its name);
+	  it = wh_map.find(line);
+
 	  //it - is the warehouse
 	  //find food_item by upc
 	  //subtract quantity from food_item.quantity += -1
@@ -209,7 +217,25 @@ int main(int argc, char** argv)
 	  getline(in, line);
 	  tim.tm_mday += 1; //adds one day
 	  mktime(&tim); //refactor months and adjusts
+	  
+	  string month;
+	  ostringstream monthconvert;
+	  monthconvert << tim.tm_mon;
+	  month = monthconvert.str();
 
+	  string day;
+	  ostringstream dayconvert;
+	  dayconvert << tim.tm_mday;
+	  day = dayconvert.str();
+
+	  string year;
+	  ostringstream yearconvert;
+	  yearconvert << tim.tm_year;
+	  year = yearconvert.str();
+
+	  assignment4::date day1(year+month+day);
+	  current_day = day1;
+	  
 	  // change all the food_items shelf-life - 1
 	  //iterate through food_item and minus one from food_item.shelf-life
 	}

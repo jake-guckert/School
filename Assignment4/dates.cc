@@ -4,9 +4,14 @@
 namespace assignment4
 {
 
-  date::date(std::string day)
+  date::date()
   {
-    this->day = day;
+  }
+
+  date::date(std::string d)
+  {
+    this->d = d;
+    this->activity = 0;
     
   }
 }

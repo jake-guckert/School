@@ -4,6 +4,7 @@
 
 #include <set>
 #include <string>
+#include <map>
 #include "dates.h"
 #include "foodItem.h"
 
@@ -19,10 +20,10 @@ namespace assignment4
     
     std::set<food_item> food_set; // what food is at this warehouse
     std::string name; // warehouse name
+    std::map< std::string, int> date_set;
 
     // not going to work. need to somehow associate it with a day.
     // so maybe we need a date class
-    int activity; // to count the number of requests and recieves
    
 
   private:
