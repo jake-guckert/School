@@ -173,6 +173,7 @@ int main(int argc, char** argv)
 	  //find food_item by upc
 	  //subtract quantity from food_item.quantity
 	  
+
 	  //add one to activity of warehouse
 	}
 
