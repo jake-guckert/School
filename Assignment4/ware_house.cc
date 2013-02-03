@@ -3,10 +3,14 @@
 
 namespace assignment4
 {
+  ware_house::ware_house()
+  {
+  }
 
   ware_house::ware_house(std::string name)
      {
        this->name = name;
+       this->current_activity = 0;
      }
 
   /*ware_house::ware_house(const ware_house & rhs)

@@ -11,7 +11,7 @@ namespace assignment4
   public:
     //constructor
     food_item();
-    food_item(std::string name, std::string upc, int shelf_life);
+    food_item(std::string name, std::string upc);
     //food_item(const food_item & other);// copy
     ~food_item(); //destructor
 

@@ -20,7 +20,7 @@ using namespace std;
 tm tim; // used for dates
 
 //key is the warehouse name
-map<string, assignment4::ware_house> wh_map; // set of warehouses
+map<string, assignment4::ware_house> wh_map; // map of warehouses by name
 
 // create a dictionary of available  food items. not tied to any warehouse
 // key is the upc. zero quantity.
@@ -28,7 +28,7 @@ map<string, assignment4::ware_house> wh_map; // set of warehouses
 map<string, assignment4::food_item> food_map;
 
 // A set of dates where the key is the date in as a string.
-assignment4::date current_day("");
+string current_day = "";
 
 /********************************************************************************/
 
@@ -68,8 +68,8 @@ int main(int argc, char** argv)
 
 	  std::string name = line;
 
-	  assignment4::food_item fi(name, upc, shelf_life);
-	  	  
+	  assignment4::food_item fi(name, upc);
+	  fi.shelf_life = shelf_life;
 	  // food item to dictionary by upc key
 	  food_map[upc] = fi;
 	}
@@ -101,14 +101,12 @@ int main(int argc, char** argv)
 	  //month
 	  tim.tm_mon = atoi(line.c_str());
 	  getline(in, line, '/');
-	  //day
-	  
+	  //day	  
 	  tim.tm_mday = atoi(line.c_str());
 	  //year
 	  getline(in, line);
 	  tim.tm_year = atoi(line.c_str());
 
-	  int activity = 0;
 
 	  string month;
 	  ostringstream monthconvert;
@@ -125,17 +123,11 @@ int main(int argc, char** argv)
 	  yearconvert << tim.tm_year;
 	  year = yearconvert.str();
 
-	  string d = year+month+day;
-	  assignment4::date day1(d);
-	  //current_day = day1;
-
-	  // we can either add day1 to all the warehouses set of dates or 
-	  // we can have a set of dates and beable to choose the first date
-	  // to add to a warehouse
+	  current_day = month+"/"+day+"/"+year;
 	}
-      
+
       //items being shipped in by warehouse
-      else if(line.compare("Receive:")==0)
+      if(line.compare("Receive:")==0)
 	{
 	  // make a new food item looked up by the upc and add quantity
 	  // and warehouse etc
@@ -155,26 +147,53 @@ int main(int argc, char** argv)
 
 	  //iterator for map
 	  map<string, assignment4::food_item>::iterator it;
+	  map<string, assignment4::ware_house>::iterator it_wh;
+	  map<string, assignment4::food_item>::iterator fs;
+	  map<string, assignment4::food_item>::iterator fm;
+	   string::iterator fm2;
+	  
+	  
 	 
-	  //find upc in food_map
-	  it = food_map.find(upc);
+	  
 	  
 	  //Check if item already exists in the warehouse
+	  it_wh = wh_map.find(warehouse); // the key and value of the warehouse from map
+       
+	  fs = it_wh->second.food_set.find(upc);
+	  fm = food_map.find(upc);
 
+	  //if item is not  already in the warehouse
+	  if(fs != it_wh->second.food_set.end())
+	    {
+	      //traverse through vector of food_items
+	      
+		  //find lowest shelf life and subtract
+		  // change quantity
+		  fs->second.quantity += quantity;
+		  fm->second.quantity +=quantity;
+		  
+	    }
+	  // the item is not in the warehouse
+	  else
+	    {
+	      //find upc in food_map
+	      it = food_map.find(upc);
+	      
+	      //it - should be a food_item??????????
+	      // make a new food_item with quantity, location and upc
+	      // and shelf-life, and name from upc
+	      assignment4::food_item f(it->second.name, it->second.upc);
+	      f.location = warehouse;
+	      f.quantity = quantity;
+	      f.shelf_life = it->second.shelf_life;
+	    
+	      //Add this food item to the food_set within the warehouse
+	      it_wh->second.food_set[upc] = f;
+	      fm->second.quantity += quantity;
 
-	  //it - should be a food_item??????????
-	  // make a new food_item with quantity, location and upc
-	  // and shelf-life, and name from upc
-	  assignment4::food_item f(it->second.name, it->second.upc, it->second.shelf_life);
-	  f.location = warehouse;
-	  f.quantity = quantity;
-
-	  //Add this food item to the warehouse
-	  //????
-
-
-	  //add one to activity of warehouse
-
+	    }
+	 
+	  it_wh->second.current_activity += quantity;
 	}
       
       // items being shipped out of a warehouse
@@ -193,27 +212,57 @@ int main(int argc, char** argv)
 	  getline(in, line);
 	  string warehouse = line;
 
-	  // iterator for set
-	  std::map<string, assignment4::ware_house>::iterator it;
-
-	  //look by warehouse, by upc and then minus quantity
-	  //find warehouse
-	  it = wh_map.find(line);
-
-	  //it - is the warehouse
-	  //find food_item by upc
-	  //subtract quantity from food_item.quantity += -1
-	  
-	  // HEAD
-
-	  //add one to activity of warehouse
-	  //warehouse.date.activity += 1 //add one to activity of warehouse
-	  // Timing objects?!??!?!
+	  //iterator for map
+	  map<string, assignment4::food_item>::iterator it;
+	  map<string, assignment4::ware_house>::iterator it_wh;
+	  map<string, assignment4::food_item>::iterator fs;
+	  map<string, int>::iterator dm;
+	 
+	  	  
+	  //Check if item already exists in the warehouse
+	  it_wh = wh_map.find(warehouse); // the key and value of the warehouse from map
+	  fs = it_wh->second.food_set.find(upc);
+	  //if item already exists in warehouse
+	  if(fs == it_wh->second.food_set.end())
+	    {
+	      // change quantity
+	      fs->second.quantity -= quantity;
+	      if(fs->second.quantity < 0)
+		fs->second.quantity = 0;
+		
+	    }
+	 
+	  it_wh->second.current_activity += quantity;
 	}
 
       else if(line.compare("Next")==0)
 	{
-	  // add one to whatever day it is
+	  // compare current_activity to activity date and swap if need be
+	  // change all the food_items shelf-life - 1
+	  // iterate through food_item and minus one from food_item.shelf-life
+	  map<string, assignment4::ware_house>::iterator it_wh;
+	  map<string, assignment4::food_item>::iterator it_f;
+
+	  for(it_wh = wh_map.begin(); it_wh != wh_map.end(); it_wh++) // goes through each warehouse
+	    {
+	      if(it_wh->second.current_activity > it_wh->second.d.activity)
+		{
+		  it_wh->second.d.activity = it_wh->second.current_activity;
+		  it_wh->second.current_activity = 0;
+		  it_wh->second.d.d = current_day;
+		}
+	      for(it_f = it_wh->second.food_set.begin(); it_f != it_wh->second.food_set.end(); it_f++) // goes through food_set within a warehouse
+		{
+		  it_f->second.shelf_life --; // minus a day off of the shelf-life
+		  if(it_f->second.shelf_life == 0)
+		    {
+		      it_f->second.quantity = 0;
+		    }
+		}
+
+	    }
+
+	   // add one to whatever day it is
 	  getline(in, line);
 	  tim.tm_mday += 1; //adds one day
 	  mktime(&tim); //refactor months and adjusts
@@ -233,30 +282,44 @@ int main(int argc, char** argv)
 	  yearconvert << tim.tm_year;
 	  year = yearconvert.str();
 
-	  assignment4::date day1(year+month+day);
-	  current_day = day1;
-	  
-	  // change all the food_items shelf-life - 1
-	  //iterate through food_item and minus one from food_item.shelf-life
+	  current_day = month+"/"+day+"/"+year;
 	}
 
       if(line.compare("End")==0)// deal with extra spaces after END!!!!
 	{
-	  cout << "\n" << endl;
 	  cout << "Report by Jake Guckert & Josh Bell\n" << endl;
 	  cout << "Unstocked Products:\n" << endl;
-	  // cout << Unstocked(map of warehouses) << "\n" <<  endl; returns a list of UPCs and name
+	  
+	  map<string, assignment4::ware_house>::iterator it_wh;
+	  map<string, assignment4::food_item>::iterator it_f;
+
+	      for(it_f = food_map.begin(); it_f != food_map.end(); it_f++) // goes through food_set within a warehouse
+		{		  
+		  
+		  if(it_f->second.quantity == 0)
+		    {
+		      cout<< it_f->second.upc << " " << it_f->second.name << endl;
+		    }
+		}
+	    
+
 	  cout << "Fully-Stocked Products:\n" << endl;
-	  // cout << FullyStocked(map of warehouses) << "\n" << endl; returns a list of UPCs and name
+	  
 	  cout << "Busiest Days:\n" << endl;
-	  // cout BusiestDays(map of warehouses) << "\n" << endl;
-	  break;
+	  
+	  for(it_wh = wh_map.begin(); it_wh != wh_map.end(); it_wh++) // goes through each warehouse
+	    {
+	      cout << it_wh->first << endl;
+	      cout << it_wh->second.d.d << endl;
+	      cout << it_wh->second.d.activity << endl;
+	    }
+	  return 0;
 	}
 
       if(in.fail())
 	{
 	  cout << "Failed" << endl;
-	  break;
+	  return 0;
 	}
     }
 

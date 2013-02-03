@@ -11,7 +11,7 @@ namespace assignment4
 
   public:
     date();
-    date(std::string d);
+    
     //~date(); // Destructor
    
     std::string d;

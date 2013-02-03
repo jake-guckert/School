@@ -6,11 +6,7 @@ namespace assignment4
 
   date::date()
   {
-  }
-
-  date::date(std::string d)
-  {
-    this->d = d;
+    this->d = "";
     this->activity = 0;
     
   }

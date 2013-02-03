@@ -3,11 +3,11 @@
 
 namespace assignment4
 {
-  food_item::food_item(std::string name, std::string upc, int shelf_life)
+  food_item::food_item(std::string name, std::string upc)
   {
     this->name = name;
     this->upc = upc;
-    this->shelf_life = shelf_life;
+    this->shelf_life = 0;
     this->location = "";
     this->quantity = 0;
 
