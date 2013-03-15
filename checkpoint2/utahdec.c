@@ -1,6 +1,6 @@
 /*
- * PNG image format
- * Copyright (c) 2003 Fabrice Bellard
+ * UTAH image format
+ * Copyright (c) 2013 Jake Guckert & Josh Bell 
  *
  * This file is part of FFmpeg.
  *
@@ -35,7 +35,8 @@
 #include <zlib.h>
 
 //#define DEBUG
-typedef struct UTAHDecContext {
+typedef struct UTAHDecContext 
+{
     AVFrame picture;
 } UTAHDecContext;
 
