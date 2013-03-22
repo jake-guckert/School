@@ -10,7 +10,7 @@
 // so I think if we just move the y value
 
 // function that takes the frame we are going to draw the circle on.
-AVFrame drawCircle(AVFrame *pict)
+AVFrame drawCircle(AVFrame *pict, )
 {
 
 
