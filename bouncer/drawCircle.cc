@@ -28,10 +28,10 @@ AVFrame drawCircle(AVFrame *pict)
   int centery = height/2;
 
   // lets start by adding an entire width of pixels
-  for(int row = 0; row < width; row++)
+  for(int col = 0; col < width; col++)
     {
 
-      uint8_t * pixel = pict->data[0]
+      uint8_t * pixel = pict->data[0] + height/2 + col;
   // do what we did in our encoding. create a pixel and add it to our bytestream
   bytestream_put_byte(&buf, pixel[0]);
       // this seems like it will just go at the end of our picture. How do we get it
