@@ -37,12 +37,7 @@ AVFrame drawCircle(AVFrame *pict) //int start)// I think it'd be best to start a
   width = pict->width; // width of frame
   int radius = .3*width; // how large we want the ball. 30% of the width
 
-  
-  int center = width/2; //
-
-  //we could make a complete center coordinates.
-  int centerx = width/2;
-  int centery = height/2;
+  int center = width/2;
 
   // start on row 10. This is for drawing one line of the ball.
   for(int row = 10; row < height; row++)
@@ -63,7 +58,7 @@ AVFrame drawCircle(AVFrame *pict) //int start)// I think it'd be best to start a
 	  // we need to figure out how to change the color of a pixel!!!!!!!
 	
       //I don't know if this is right. It seems. before we were changing the row each time but this time were just gonna change one entire line. That line will be at heigheight/2 * pict->line
-      uint8_t * pixel = pict->data[0] + (height/2 * pict->linesize[0]) + col;
+      uint8_t * pixel = pict->data[0] + (row * pict->linesize[0]) + leftStart;
 
       // do what we did in our encoding. create a pixel and add it to our bytestream
       bytestream_put_byte(&buf, pixel[0]);

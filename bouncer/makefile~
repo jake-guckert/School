@@ -1,0 +1,10 @@
+all: a.out
+
+a.out: bouncer.cc
+	g++ -I ../ffmpeg/include/ -L ../ffmpeg/lib bouncer.c `pkg-config --cflags --libs libavutil libavformat libavcodec libswscale`
+
+clean:
+	rm -f *.o a.out
+	rm -f *.o *.out *.cc~ *.utah *.ppm
+movie: 
+
