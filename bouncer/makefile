@@ -6,5 +6,5 @@ a.out: bouncer.c
 clean:
 	rm -f *.o a.out
 	rm -f *.o *.out *.cc~ *.utah *.ppm
-movie: 
-
+movie: *.utah
+	ffmpeg -f image2 -r 30 -pattern_type glob -i '*.utah' out.mp4; ffplay out.mp4
