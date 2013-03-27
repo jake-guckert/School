@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+AVFrame * convert(AVFrame * in, int format);
+
 void writeFrame(AVFrame * in, int number) //number = sequence number
 {
   FILE *pFile;
@@ -39,7 +41,7 @@ void writeFrame(AVFrame * in, int number) //number = sequence number
     exit(1);
   }
   
-  // frame = convert(in, c);
+  //frame = convert(in, c);
   c->width = in->width;
   c->height = in->height;
   c->pix_fmt = codec->pix_fmts[0];//????????
@@ -224,7 +226,8 @@ int main(int argc, char *argv[]) {
  AVFrame * orig = loadFrame(argv[1]);
 
  AVFrame * copy = convert(orig, AV_PIX_FMT_RGB8);
- int i;
+ 
+int i;
  for(i=0; i < 300; i++)
    {
      writeFrame(copy, i);
