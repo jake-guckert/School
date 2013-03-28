@@ -7,4 +7,13 @@ clean:
 	rm -f *.o a.out
 	rm -f *.o *.out *.cc~ *.utah bouncer *.mp4
 movie: *.utah
-	ffmpeg -f image2 -r 30 -pattern_type glob -i '*.utah' out.mp4; ffplay out.mp4
+	ffmpeg -i frame%d.utah -vcodec mpeg4 out.mp4; ffplay out.mp4
+
+frame: 
+	./bouncer plant.jpg
+
+one:
+	make clean; make; make frame; ffplay frame0.utah
+it:
+	make clean; make; make frame; make movie
+

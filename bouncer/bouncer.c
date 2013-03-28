@@ -1,11 +1,43 @@
+//Bouncer: takes any pictures and creates an animation of a ball bouncing
+//   this code uses the ffmpeg library
+//Josh Bell and Jake Guckert
+
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
+#include <math.h>
 #include <stdio.h>
+#include "string.h"
 
 AVFrame * convert(AVFrame * in, int format);
 
+//Draw the circle by column within a circle boundary
+void drawCircle(AVFrame * f, int cx, int cy, int rad)
+{
+  int row, col;
+  int scale;
+  for (col = cx-rad; col <= cx+rad; col++) {
+    for(row = cy-rad; row <= cy+rad; row++)
+      {	
+	int dy = row-cy;
+	int dx = col-cx;
+	
+	if(rad >= sqrt(dx*dx+dy*dy)){
+	  //used to scale color for shading
+	  uint8_t * pix = f->data[0] + (row * f->linesize[0]) + col*3;
+	  *(pix++) = 255+scale; //(uint8_t) scale * r;
+	  *(pix++) = 0+scale; //(uint8_t) scale * g;
+	  *(pix++) = 0+scale; //(uint8_t) scale * b;
+	}	
+      } 
+      scale+=1;
+  }
+  }
+
+/**
+ * Writes a frame to a file
+ */
 void writeFrame(AVFrame * in, int number) //number = sequence number
 {
   FILE *pFile;
@@ -13,7 +45,6 @@ void writeFrame(AVFrame * in, int number) //number = sequence number
   AVCodec *codec;
   AVCodecContext *c= NULL;
   int i, ret, x, y, got_output;
-  FILE *f;
   AVFrame *frame;
   AVPacket pkt;
 
@@ -41,44 +72,44 @@ void writeFrame(AVFrame * in, int number) //number = sequence number
     exit(1);
   }
   
-  //frame = convert(in, c);
   c->width = in->width;
   c->height = in->height;
   c->pix_fmt = codec->pix_fmts[0];//????????
+
 
   /* open it */
   if (avcodec_open2(c, codec, NULL) < 0) {
     fprintf(stderr, "Could not open codec\n");
     exit(1);
   }
+
+  frame = avcodec_alloc_frame();
+
+  frame = convert(in, c->pix_fmt);
   
-  // open file for writing
-  f = fopen(filename, "wb");
-  if (!f) {
-    fprintf(stderr, "Could not open %s\n", filename);
+
+  /* encode the image */
+  ret = avcodec_encode_video2(c, &pkt, frame, &got_output);
+  if (ret < 0) {
+    fprintf(stderr, "Error encoding frame\n");
     exit(1);
   }
 
-    /* encode the image */
-    ret = avcodec_encode_video2(c, &pkt, frame, &got_output);
-    if (ret < 0) {
-      fprintf(stderr, "Error encoding frame\n");
-      exit(1);
-    }
-
-    if (got_output) {
-      printf("Write frame %3d (size=%5d)\n", i, pkt.size);
-      fwrite(pkt.data, 1, pkt.size, f);
-      av_free_packet(&pkt);
-    }
+  if (got_output) {
+    printf("Write frame %3d (size=%5d)\n", i, pkt.size);
+    fwrite(pkt.data, 1, pkt.size, pFile);
+    av_free_packet(&pkt);
+  }
   
-    fclose(f);
-    avcodec_close(c);
-    printf("\n");
+  fclose(pFile);
+  avcodec_close(c);
+  av_free(c);
 }
 
 
-
+/*
+ * Converts frame to the file type specified
+ */
 AVFrame * convert(AVFrame * in, int format)
 {
   int                    numBytes;
@@ -91,29 +122,26 @@ AVFrame * convert(AVFrame * in, int format)
 			      in->height);
   buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
 
- sws_ctx =
+  sws_ctx =
     sws_getContext
     (
-        in->width,
-        in->height,
-        in->format,
-        in->width,
-        in->height,
-        format,
-        SWS_BILINEAR,
-        NULL,
-        NULL,
-        NULL
-    );
+     in->width,
+     in->height,
+     in->format,
+     in->width,
+     in->height,
+     format,
+     SWS_BILINEAR,
+     NULL,
+     NULL,
+     NULL
+     );
 
- // Allocate an AVFrame structure
+  // Allocate an AVFrame structure
   pFrameRGB=avcodec_alloc_frame();
   if(pFrameRGB==NULL)
     return NULL;
 
-  pFrameRGB->width = in->width;
-  pFrameRGB->height = in->height;
-  pFrameRGB->format = format;
 
   // Assign appropriate parts of buffer to image planes in pFrameRGB
   // Note that pFrameRGB is an AVFrame, but AVFrame is a superset
@@ -122,22 +150,30 @@ AVFrame * convert(AVFrame * in, int format)
 		 in->width, in->height);
 
   
-	// Convert the image from its native format to RGB
-        sws_scale
-        (
-	 sws_ctx,            //maybe not this int.
-            (uint8_t const * const *)in->data, // the source of the pixels
-            in->linesize, // how big the lines are on that source
-            0,
-            in->height, //destination height
-            pFrameRGB->data,
-            pFrameRGB->linesize
-        );
-      
+  // Convert the image from its native format to RGB
+  sws_scale
+    (
+     sws_ctx,            //maybe not this int.
+     (uint8_t const * const *)in->data, // the source of the pixels
+     in->linesize, // how big the lines are on that source
+     0,
+     in->height, //destination height
+     pFrameRGB->data,
+     pFrameRGB->linesize
+     );
 
-      return pFrameRGB;
+	
+  pFrameRGB->width = in->width;
+  pFrameRGB->height = in->height;
+  pFrameRGB->format = format;
+
+  return pFrameRGB;
 }
 
+
+/*
+ * take an image decodes to raw data
+ */
 AVFrame * loadFrame(char* filename)
 {
   AVFormatContext *pFormatCtx = NULL;
@@ -149,8 +185,6 @@ AVFrame * loadFrame(char* filename)
   AVPacket        packet;
   int             frameFinished;
   AVDictionary    *optionsDict = NULL;
- 
-  
  
   // Register all formats and codecs
   av_register_all();
@@ -192,22 +226,18 @@ AVFrame * loadFrame(char* filename)
   // Allocate video frame
   pFrame=avcodec_alloc_frame();
 
- 
-  
-/*********************************************************************************/
-
   // Read frames and save first five frames to disk
-int done=0;
+  int done=0;
   while(av_read_frame(pFormatCtx, &packet)>=0 && !done) {
     // Is this a packet from the video stream?
     if(packet.stream_index==videoStream) {
       // Decode video frame
       avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, 
-			   &packet);
+			    &packet);
 
-       // Did we get a video frame?
+      // Did we get a video frame?
       if(frameFinished)
-	pFrameRGB = convert(pFrame,AV_PIX_FMT_RGB8);
+	pFrameRGB = convert(pFrame,AV_PIX_FMT_RGB24);
 	  
     }
     done=1; //??????? as soon as get any frame
@@ -218,21 +248,55 @@ int done=0;
 
 int main(int argc, char *argv[]) {
   
- if(argc < 2) {
+  if(argc < 2) {
     printf("Please provide a movie file\n");
     return -1;
   }
+  char * temp = argv[1];
+  char * tokens = strchr(temp, '.');
 
- AVFrame * orig = loadFrame(argv[1]);
+  if(strcmp(tokens, ".jpg") != 0) {
+    printf("Please provide a jpg file\n");
+    return -1;
+  }
 
- AVFrame * copy = convert(orig, AV_PIX_FMT_RGB8);
- 
-int i;
- for(i=0; i < 300; i++)
-   {
-     writeFrame(copy, i);
-   }
- //free memory maybe
+  AVFrame * orig = loadFrame(argv[1]);
+  AVFrame * copy = convert(orig, AV_PIX_FMT_RGB24);
+  AVFrame * workingFrame;
+  int circleY = copy->height/2;
+  int circleX = copy->width/2;
+  int rad = copy->width/8;
+  int direction = 0;
+  int velocity = 8;
+  int frameHeight = copy->height;
+
+
+  int i;
+  for(i=0; i < 300 ; i++)
+    {
+      //allocate space for a new copy to draw on
+      workingFrame = avcodec_alloc_frame();
+      workingFrame = convert(copy, AV_PIX_FMT_RGB24);
+
+      //draw on working frame
+      drawCircle(workingFrame, circleX, circleY, rad);
+   
+      // check the location of the ball and change direction if going off frame
+      if(direction == 0)
+        circleY += velocity;
+      if(direction == 1)
+        circleY -= velocity;
+      if(circleY+rad+10 > frameHeight)
+        direction = 1;
+      if(circleY-rad-10 < 0)
+        direction = 0;
+      
+      //drawcircle on copy
+      writeFrame(workingFrame, i);
+
+      av_free(workingFrame);
+    }
+  //free memory maybe
   
   return 0;
 }
