@@ -165,6 +165,9 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
+    printf("%c\n", cmdline[0]);
+    printf("%c\n", cmdline[1]);
+    printf("%c\n", cmdline[2]);
     return;
 }
 
