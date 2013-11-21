@@ -110,7 +110,7 @@ int main(int argc, char **argv)
         case 'p':             /* don't print a prompt */
             emit_prompt = 0;  /* handy for automatic testing */
 	    break;
-	default:
+	    default:
             usage();
 	}
     }
@@ -161,13 +161,49 @@ int main(int argc, char **argv)
  * the foreground, wait for it to terminate and then return.  Note:
  * each child process must have a unique process group ID so that our
  * background children don't receive SIGINT (SIGTSTP) from the kernel
- * when we type ctrl-c (ctrl-z) at the keyboard.  
+ * when we type ctrl-c (ctrl-z) at the keyboard.
 */
 void eval(char *cmdline) 
 {
+<<<<<<< HEAD
+    char* line = NULL;
+    char* final_line = NULL;
+
+    line = strtok(cmdline, " ");
+
+    printf("%s", line);
+
+// some how remove newline. replace with null terminating
+    if(line[(strlen(line)-1)] == '\n')
+        line[(strlen(line)-1)] = '\0';
+
+// Find out which command
+  if(strcmp(line, "jobs") == 0)
+  {
+    printf("jobs");
+  }
+  else if(strcmp(line, "quit") == 0)
+  {
+    printf("quit");
+  }
+  else if(strcmp(line, "bg") == 0)
+  {
+    printf("bg"); 
+  }
+  else if(strcmp(line, "fg") == 0)
+  {
+    printf("fg");
+  }
+  else
+  {
+    printf("else");
+  }
+
+=======
     printf("%c\n", cmdline[0]);
     printf("%c\n", cmdline[1]);
     printf("%c\n", cmdline[2]);
+>>>>>>> f12921b21809eb353680c823b56471cee91fa87f
     return;
 }
 
