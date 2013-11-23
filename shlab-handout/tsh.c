@@ -1,7 +1,8 @@
 /* 
  * tsh - A tiny shell program with job control
  * 
- * <Put your name and login ID here>
+ * < Jake Guckert login: guckert
+     Josh Bell login: jbell >
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,8 +166,7 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
-<<<<<<< HEAD
-    char* line = NULL;
+    /*char* line = NULL;
     char* final_line = NULL;
 
     line = strtok(cmdline, " ");
@@ -177,10 +177,10 @@ void eval(char *cmdline)
     if(line[(strlen(line)-1)] == '\n')
         line[(strlen(line)-1)] = '\0';
 
-// Find out which command
+ Find out which command
   if(strcmp(line, "jobs") == 0)
   {
-    printf("jobs");
+    printf("jobs\n");
   }
   else if(strcmp(line, "quit") == 0)
   {
@@ -197,13 +197,21 @@ void eval(char *cmdline)
   else
   {
     printf("else");
-  }
+  }*/
 
-=======
-    printf("%c\n", cmdline[0]);
-    printf("%c\n", cmdline[1]);
-    printf("%c\n", cmdline[2]);
->>>>>>> f12921b21809eb353680c823b56471cee91fa87f
+    // first we need to call parseline to find out if the command 
+    // was for a background job or a foreground job. 
+    int bg;
+    char* argv[MAXARGS];
+
+    bg = parseline(cmdline, argv);
+    printf("%d\n", bg);
+
+    /* Then we need to check to see if the command was a built in one. */
+    if(!builtin_cmd(argv))
+    {
+        printf("hello world\n");
+    }    
     return;
 }
 
@@ -270,6 +278,28 @@ int parseline(const char *cmdline, char **argv)
  */
 int builtin_cmd(char **argv) 
 {
+    if(!strcmp(argv[0], "quit")) {
+        printf("The quit command was called.\n");
+        exit(0);
+    }   
+    
+    if (!strcmp(argv[0], "jobs")) {
+        listjobs(jobs);
+        printf("The jobs command was called.\n");
+        return 1;  
+    }
+
+    if (!strcmp(argv[0], "bg")) {
+        do_bgfg(argv);
+        printf("The bg <job> command was called.\n");
+        return 1;  
+    }
+
+    if (!strcmp(argv[0], "fg")) {
+        do_bgfg(argv);
+        printf("The fg <job> command was called.\n");
+        return 1;  
+    }     
     return 0;     /* not a builtin command */
 }
 
@@ -312,6 +342,10 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig) 
 {
+    signal(sig, SIG_IGN);
+    printf("ctrl-c signal caught\n");
+    exit(0);
+
     return;
 }
 
@@ -543,6 +577,3 @@ void sigquit_handler(int sig)
     printf("Terminating after receipt of SIGQUIT signal\n");
     exit(1);
 }
-
-
-
