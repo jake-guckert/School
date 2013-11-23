@@ -166,39 +166,6 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
-    /*char* line = NULL;
-    char* final_line = NULL;
-
-    line = strtok(cmdline, " ");
-
-    printf("%s", line);
-
-// some how remove newline. replace with null terminating
-    if(line[(strlen(line)-1)] == '\n')
-        line[(strlen(line)-1)] = '\0';
-
- Find out which command
-  if(strcmp(line, "jobs") == 0)
-  {
-    printf("jobs\n");
-  }
-  else if(strcmp(line, "quit") == 0)
-  {
-    printf("quit");
-  }
-  else if(strcmp(line, "bg") == 0)
-  {
-    printf("bg"); 
-  }
-  else if(strcmp(line, "fg") == 0)
-  {
-    printf("fg");
-  }
-  else
-  {
-    printf("else");
-  }*/
-
     // first we need to call parseline to find out if the command 
     // was for a background job or a foreground job. 
     int bg;
@@ -210,7 +177,34 @@ void eval(char *cmdline)
     /* Then we need to check to see if the command was a built in one. */
     if(!builtin_cmd(argv))
     {
-        printf("hello world\n");
+        // Find out whether any of the arguments are &
+        // if so start a background process
+        int i;
+        pid_t p = 1; // I don't know where to get this from
+        int bgP = 0; // not a background process
+
+        // Probably stepping through to many argument here
+        for(i = 0; i < MAXARGS; i++)
+        {
+            if(!strcmp(argv[i], "&"))
+            {
+                bgP = 1;
+                break;
+            }
+        }
+
+        if(bgP)
+        {
+            printf("bg\n");
+            addjob(jobs, p, FG, cmdline);
+        }
+        else
+        {
+            addjob(jobs, p, FG, cmdline);
+
+            /* At most 1 job can be in the FG state.*/
+            waitfg(p);
+        }  
     }    
     return;
 }
@@ -285,6 +279,7 @@ int builtin_cmd(char **argv)
     
     if (!strcmp(argv[0], "jobs")) {
         listjobs(jobs);
+
         printf("The jobs command was called.\n");
         return 1;  
     }
@@ -308,6 +303,27 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv) 
 {
+    // its bizzarre why it would find out whether it was bg or fg
+    // and then call the same funtion anyway. dumb!
+    // Do you think we need to find out if it's bg or fg again???
+
+    // send the job a SIGCONT signal
+    char* signalNum = argv[1];
+    printf("%s", signalNum);
+
+    //signalNum is either a PID or JID
+    // JID is %n. PID is n.
+
+    //find out whether the command was bg or fg
+    if(!strcmp(argv[0], "bg"))
+    {
+
+    }
+    else
+    {
+
+    }
+
     return;
 }
 
