@@ -172,39 +172,48 @@ void eval(char *cmdline)
     char* argv[MAXARGS];
 
     bg = parseline(cmdline, argv);
-    printf("%d\n", bg);
+    if (bg == -1) return;               /* parsing error */
+    if (argv[0] == NULL)  return;
 
     /* Then we need to check to see if the command was a built in one. */
     if(!builtin_cmd(argv))
     {
-        // Find out whether any of the arguments are &
-        // if so start a background process
-        int i;
-        pid_t p = 1; // I don't know where to get this from
-        int bgP = 0; // not a background process
+        pid_t pid;
+        sigset_t mask;
+        sigemptyset(&mask);
+        sigaddset(&mask, SIGCHLD);
+        sigaddset(&mask, SIGINT);
+        sigaddset(&mask, SIGTSTP);
 
-        // Probably stepping through to many argument here
-        for(i = 0; i < MAXARGS; i++)
+         /* Block signal receving in parent */
+        sigprocmask(SIG_BLOCK, &mask, NULL);
+
+        if ((pid=fork())==0)
         {
-            if(!strcmp(argv[i], "&"))
-            {
-                bgP = 1;
-                break;
-            }
+            /* Unblock signal receiving in child */
+            sigprocmask(SIG_UNBLOCK, &mask, NULL);
+
+            /* Changes the child's process group from the shell's */
+            setpgid(0,0);
         }
 
-        if(bgP)
-        {
-            printf("bg\n");
-            addjob(jobs, p, FG, cmdline);
+         /* Foreground job*/
+        if (!bg){
+          if (!addjob(jobs, pid, FG, cmdline))
+            return;
+          sigprocmask(SIG_UNBLOCK, &mask, NULL);
+          waitfg(pid);
+          return;
         }
-        else
-        {
-            addjob(jobs, p, FG, cmdline);
 
-            /* At most 1 job can be in the FG state.*/
-            waitfg(p);
-        }  
+        /* Background job */
+        if (bg){
+          if (!addjob(jobs, pid, BG, cmdline))
+            return;
+          sigprocmask(SIG_UNBLOCK, &mask, NULL);
+          printf("[%d] (%d) %s\n", pid2jid(pid), pid, cmdline);
+        }
+ 
     }    
     return;
 }
@@ -303,10 +312,6 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv) 
 {
-    // its bizzarre why it would find out whether it was bg or fg
-    // and then call the same funtion anyway. dumb!
-    // Do you think we need to find out if it's bg or fg again???
-
     // send the job a SIGCONT signal
     char* signalNum = argv[1];
     printf("%s", signalNum);
