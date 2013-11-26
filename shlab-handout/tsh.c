@@ -398,6 +398,34 @@ void changeProcessState(struct job_t *jobs, pid_t pid, int state)
  */
 void sigchld_handler(int sig) 
 {
+    pid_t pid;
+    struct  job_t *job;
+    int status;
+
+    while ((pid = waitpid(-1, &status, WNOHANG|WUNTRACED)) > 0) {
+        if (WIFEXITED(status)) {
+            deletejob(jobs, pid);
+        }
+        else if (WIFSIGNALED(status)) {
+            job = getjobpid(jobs, pid);
+            printf("Job [%i] (%i) terminated by signal %i\n", job->jid, job->pid, WTERMSIG(status));
+            fflush(stdout);
+            deletejob(jobs, pid);
+        }
+        else if (WIFSTOPPED(status)) {
+            job = getjobpid(jobs, pid);
+            job->state = ST;
+        }
+        else {
+            printf("Process (%i) terminated abnormally\n", pid);
+            fflush(stdout);
+            deletejob(jobs, pid);
+        }
+    }
+
+    if((errno != ECHILD && pid == -1) || pid > 0) {
+        unix_error("waitpid error");
+    }
     return;
 }
 
@@ -408,11 +436,14 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig) 
 {
-    signal(sig, SIG_IGN);
-    printf("ctrl-c signal caught\n");
-    exit(0);
+    struct job_t *job = getjobpid(jobs, fgpid(jobs));
 
-    return;
+    if(job != NULL) {
+        Kill(-job->pid, SIGINT);
+        printf("Job [%i] (%i) terminated by signal %i\n", job->jid, job->pid, sig);
+        fflush(stdout);
+        deletejob(jobs, job->pid);
+    }
 }
 
 /*
@@ -422,7 +453,15 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig) 
 {
-    return;
+     struct job_t *job = getjobpid(jobs, fgpid(jobs));
+
+     if (job != NULL) {
+        Kill(-job->pid, SIGTSTP);
+        job->state = ST;
+        printf("Job [%i] (%i) stopped by signal %i\n", job->jid, job->pid, sig);
+        fflush(stdout);
+        return;
+     }
 }
 
 /*********************
