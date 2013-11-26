@@ -58,7 +58,7 @@ struct job_t jobs[MAXJOBS]; /* The job list */
 /* Here are the functions that you will implement */
 void eval(char *cmdline);
 int builtin_cmd(char **argv);
-void do_bgfg(char **argv);
+void do_bgfg(char **argv, int state);
 void waitfg(pid_t pid);
 
 void sigchld_handler(int sig);
@@ -294,13 +294,13 @@ int builtin_cmd(char **argv)
     }
 
     if (!strcmp(argv[0], "bg")) {
-        do_bgfg(argv);
+        do_bgfg(argv, BG);
         printf("The bg <job> command was called.\n");
         return 1;  
     }
 
     if (!strcmp(argv[0], "fg")) {
-        do_bgfg(argv);
+        do_bgfg(argv, FG);
         printf("The fg <job> command was called.\n");
         return 1;  
     }     
@@ -310,8 +310,13 @@ int builtin_cmd(char **argv)
 /* 
  * do_bgfg - Execute the builtin bg and fg commands
  */
-void do_bgfg(char **argv) 
+void do_bgfg(char **argv, int state) 
 {
+    if(argv[1] == NULL)
+        return;
+
+    pid_t pid;
+    
     // send the job a SIGCONT signal
     char* signalNum = argv[1];
     printf("%s", signalNum);
@@ -319,14 +324,36 @@ void do_bgfg(char **argv)
     //signalNum is either a PID or JID
     // JID is %n. PID is n.
 
-    //find out whether the command was bg or fg
-    if(!strcmp(argv[0], "bg"))
+    // Find out PID
+    // If JID 
+    if(signalNum[0] == '%')
     {
-
+        
+        int jid = atoi((char*)(signalNum + sizeof(char)));
+        pid = jid2pid(jid);
+        if(!pid)
+            app_error("No such jid \n");
     }
+    // If PID
     else
     {
+        pid = atoi(signalNum);
+        if(!pid2jid(pid))
+            app_error("No such pid\n");
+    }
 
+    // Kill process. Change it to FG or BG
+    Kill(-pid, SIGCONT);
+    changeProcessState(jobs, pid, state);
+    if(state==BG)
+    {
+        printf("[%d] (%d) %s\n", pid2jid(pid), pid,
+           getjobpid(jobs, pid)->cmdline);      
+    }
+
+    if(state == FG)
+    {
+        waitfg(pid);
     }
 
     return;
@@ -338,6 +365,24 @@ void do_bgfg(char **argv)
 void waitfg(pid_t pid)
 {
     return;
+}
+
+void changeProcessState(struct job_t *jobs, pid_t pid, int state)
+{
+    if(pid < 0)
+        app_error("Negative pid");
+    int i;
+    for(i = 0; i < MAXJOBS; i++)
+    {
+        if(jobs[i].pid == pid)
+        {
+            jobs[i].state = state;
+            return;
+        }
+    }
+    app_error("No jobs with the pid");
+    return;
+    
 }
 
 /*****************
