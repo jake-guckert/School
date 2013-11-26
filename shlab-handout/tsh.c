@@ -315,7 +315,8 @@ void do_bgfg(char **argv, int state)
     if(argv[1] == NULL)
         return;
 
-    pid_t pid;
+    struct job_t * job;
+    job = NULL;
     
     // send the job a SIGCONT signal
     char* signalNum = argv[1];
@@ -328,34 +329,59 @@ void do_bgfg(char **argv, int state)
     // If JID 
     if(signalNum[0] == '%')
     {
-        
-        int jid = atoi((char*)(signalNum + sizeof(char)));
-        pid = jid2pid(jid);
-        if(!pid)
+        //Maybe find out if second argument is a digit ??
+        job = getjobjid(jobs, atoi(signalNum + 1)); // + 1??
+        if(!job)
+        {
+            fflush(stdout);
             app_error("No such jid \n");
+            return;
+        }
+        
     }
     // If PID
     else
     {
-        pid = atoi(signalNum);
-        if(!pid2jid(pid))
+        job = getjobpid(jobs, atoi(signalNum));
+        if(!job)
+        {
+            fflush(stdout);
             app_error("No such pid\n");
+            return;
+        }
+    }
+
+    if(job == NULL)
+    {
+        fflush(stdout);
+        app_error("must be a % followed by a number or a number\n");
+        return;
     }
 
     // Kill process. Change it to FG or BG
-    Kill(-pid, SIGCONT);
-    changeProcessState(jobs, pid, state);
-    if(state==BG)
+    // BG command. Restart job.
+    if(state == BG)
     {
-        printf("[%d] (%d) %s\n", pid2jid(pid), pid,
-           getjobpid(jobs, pid)->cmdline);      
+        printf("[%i] (%i) %s", job->jid, job->pid, job->cmdline);        
+        fflush(stdout);
+        if (kill(-job->pid, SIGCONT) == 0) { //change to big K
+            job->state = BG;
+        }    
     }
 
-    if(state == FG)
+    // FG command
+    else if(state == FG)
     {
-        waitfg(pid);
+        if(kill(-job->pid, SIGCONT) == 0)
+        {
+            job->state = FG;
+
+            //Tell shell to wait for the process to complete
+            waitfg(job->pid);
+        }
     }
 
+    fflush(stdout);
     return;
 }
 
@@ -364,6 +390,16 @@ void do_bgfg(char **argv, int state)
  */
 void waitfg(pid_t pid)
 {
+    struct job_t * job;
+    job = getjobpid(jobs, pid);
+    // Foreground process has finished
+    if(!job)
+        return;
+
+    // Wait for a foreground process
+    while(job->pid == pid && job->state == FG)
+        sleep(1);
+    
     return;
 }
 
@@ -383,6 +419,14 @@ void changeProcessState(struct job_t *jobs, pid_t pid, int state)
     app_error("No jobs with the pid");
     return;
     
+}
+
+pid_t Kill(pid_t p, int signalNumber) {
+        pid_t pid;        
+        if ((pid = kill(p, signalNumber)) < 0) {
+                app_error("kill error");
+        }
+        return pid;
 }
 
 /*****************
